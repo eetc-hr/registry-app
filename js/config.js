@@ -1,0 +1,1 @@
+﻿const GAS_URL = "PUT_YOUR_GAS_WEBAPP_URL_HERE";
