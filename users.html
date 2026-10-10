@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>المستخدمين والصلاحيات</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo-wrap"><img src="assets/EETC_Logo.png" class="logo" onerror="this.style.display='none'"></div>
+        <div class="title-group">
+          <div class="app-title">متابعة رئيس قطاعات الموارد البشرية والتدريب</div>
+        </div>
+      </div>
+      <button class="btn btn-ghost" onclick="logout()">خروج</button>
+    </div>
+    <nav>
+      <a href="index.html">الرئيسية</a>
+      <a href="incoming.html">تسجيل الوارد</a>
+      <a href="outgoing.html">تسجيل الصادر</a>
+      <a href="reports.html">التقارير</a>
+      <a href="settings.html">الإعدادات</a>
+      <a href="users.html" class="active">المستخدمين والصلاحيات</a>
+    </nav>
+  </header>
+  <main>
+    <div class="container">
+      <section class="card">
+        <div class="card-header"><h2 class="card-title">إضافة مستخدم جديد وتخصيص الصلاحيات</h2></div>
+        <div class="grid grid-2">
+          <div class="field"><label>اسم المستخدم</label><input id="u"></div>
+          <div class="field"><label>كلمة المرور</label><input type="password" id="p"></div>
+          <div class="field"><label>الاسم الكامل</label><input id="fn"></div>
+          <div class="field"><label>الدور</label><select id="role"><option value="admin">admin</option><option value="editor">editor</option><option value="viewer">viewer</option></select></div>
+        </div>
+        <div class="grid grid-2">
+          <label><input type="checkbox" data-perm="incoming"> الوارد (عرض/تعديل)</label>
+          <label><input type="checkbox" data-perm="outgoing"> الصادر (عرض/تعديل)</label>
+          <label><input type="checkbox" data-perm="reports"> التقارير</label>
+          <label><input type="checkbox" data-perm="settings"> الإعدادات</label>
+          <label><input type="checkbox" data-perm="users"> المستخدمين والصلاحيات</label>
+        </div>
+        <button class="btn btn-success" onclick="addUser()">إضافة مستخدم</button>
+      </section>
+      <section class="card">
+        <div class="card-header"><h2 class="card-title">قائمة المستخدمين</h2></div>
+        <div class="table-wrap" id="usersTbl"></div>
+      </section>
+    </div>
+  </main>
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script>requireAuth()</script>
+</body>
+</html>
