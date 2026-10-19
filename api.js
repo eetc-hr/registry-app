@@ -1,8 +1,8 @@
-﻿async function api(action, payload = {}) {
+async function api(action, payload = {}) {
   const token = localStorage.getItem("token") || "";
   const res = await fetch(GAS_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "text/plain;charset=UTF-8" },
     body: JSON.stringify(Object.assign({}, payload, { action: action, token: token }))
   });
   const j = await res.json();

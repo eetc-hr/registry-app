@@ -1,4 +1,4 @@
-﻿/* SHA-256: try WebCrypto (HTTPS/localhost), fallback to pure JS so it works on file:// or http:// */
+/* SHA-256: try WebCrypto (HTTPS/localhost), fallback to pure JS so it works on file:// or http:// */
 function sha256(ascii) {
   if (typeof crypto !== "undefined" && crypto.subtle && crypto.subtle.digest) {
     var enc = new TextEncoder();
@@ -85,7 +85,7 @@ async function login(user, pass) {
     var hp = await sha256(pass);
     var r = await fetch(GAS_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "text/plain;charset=UTF-8" },
       body: JSON.stringify({ action: "login", username: user, passwordHash: hp })
     });
     var txt = await r.text();
