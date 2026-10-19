@@ -20,8 +20,9 @@ async function api(action, payload) {
 
 function can(screen, mode) {
   const u = getUser();
-  if (!u || !u.perms) return false;
-  const p = u.perms[screen];
+  if (!u) return false;
+  if (String(u.role || "").trim().toLowerCase() === "admin" || String(u.username || "") === "admin") return true;
+  const p = (u.perms || {})[screen];
   if (!p) return false;
   if (mode === "w") return p === "rw" || p === "w";
   return p === "r" || p === "rw" || p === "w";
@@ -29,12 +30,21 @@ function can(screen, mode) {
 
 function applyPermissions() {
   const u = getUser();
-  if (!u) return;
+  if (!u) { document.body.classList.add("ready"); return; }
   document.querySelectorAll("[data-screen]").forEach(function (el) {
     const screen = el.getAttribute("data-screen");
     const mode = el.getAttribute("data-mode") || "r";
     if (!can(screen, mode)) el.style.display = "none";
   });
+  const hasAny = String(u.role || "").trim().toLowerCase() === "admin" || String(u.username || "") === "admin" || Object.keys(u.perms || {}).length > 0;
+  if (!hasAny) {
+    const warn = document.createElement("div");
+    warn.className = "perm-warn";
+    warn.textContent = "لا توجد صلاحيات مخصصة لحسابك — سجّل الدخول بحساب admin ثم افتح الإعدادات ← المستخدمون لإضافة الصلاحيات.";
+    const host = document.querySelector("main .container") || document.querySelector("main");
+    if (host) host.insertBefore(warn, host.firstChild);
+  }
+  document.body.classList.add("ready");
 }
 
 function fileToBase64(file) {

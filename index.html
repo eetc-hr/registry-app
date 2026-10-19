@@ -13,7 +13,7 @@
         <div class="logo-wrap"><img src="EETC_Logo.png" class="logo" onerror="this.style.display='none'"></div>
         <div class="title-group">
           <div class="app-title">نظام الوارد والصادر ومتابعة الموضوعات</div>
-          <div class="app-subtitle">آخر التحديثات والمتابعة</div>
+          <div class="app-subtitle">متابعة رئيس قطاعات الموارد البشرية والتدريب</div>
         </div>
       </div>
       <button class="btn btn-ghost" onclick="logout()">خروج</button>
@@ -143,16 +143,17 @@
       try{
         const j = await api("listReports");
         if(j.ok) totals = j.totals;
-        else errs.push(j.error || "تعذر تحميل التقارير");
-      }catch(e){ errs.push(e.message); }
+      }catch(e){}
 
       if(totals){
         set("totInc", totals.incoming);
         set("totOut", totals.outgoing);
         set("totTop", totals.topics);
       }else{
-        try{ const a = await api("listIncoming");  if(a.ok) set("totInc", a.data.length); else errs.push(a.error||""); }catch(e){ errs.push(e.message); }
-        try{ const a = await api("listOutgoing");  if(a.ok) set("totOut", a.data.length); else errs.push(a.error||""); }catch(e){ errs.push(e.message); }
+        let got = 0;
+        try{ const a = await api("listIncoming"); if(a.ok){ set("totInc", a.data.length); got++; } }catch(e){}
+        try{ const a = await api("listOutgoing"); if(a.ok){ set("totOut", a.data.length); got++; } }catch(e){}
+        if(!got) errs.push("تعذر تحميل أرقام الوارد والصادر — تحقق من صلاحياتك");
       }
 
       try{

@@ -11,7 +11,7 @@
     <div class="topbar">
       <div class="brand">
         <div class="logo-wrap"><img src="EETC_Logo.png" class="logo" onerror="this.style.display='none'"></div>
-        <div class="title-group"><div class="app-title">متابعة رئيس قطاعات الموارد البشرية والتدريب</div><div class="app-subtitle">الإعدادات</div></div>
+        <div class="title-group"><div class="app-title">نظام الوارد والصادر ومتابعة الموضوعات</div><div class="app-subtitle">متابعة رئيس قطاعات الموارد البشرية والتدريب</div></div>
       </div>
       <button class="btn btn-ghost" onclick="logout()">خروج</button>
     </div>
@@ -223,12 +223,14 @@
     }
 
     /* ---------- users ---------- */
+    let editingUser = null;
     function collectPerms(){
       const perms = {};
       document.querySelectorAll("[data-perm]").forEach(function(s){ if(s.value) perms[s.getAttribute("data-perm")] = s.value; });
       return perms;
     }
     function clearU(){
+      editingUser = null;
       ["u","p","fn"].forEach(function(id){ document.getElementById(id).value = ""; });
       document.getElementById("active").value = "true";
       document.querySelectorAll("[data-perm]").forEach(function(s){ s.value = ""; });
@@ -236,12 +238,22 @@
     async function saveU(){
       const username = document.getElementById("u").value.trim();
       if(!username){ alert("أدخل اسم المستخدم"); return; }
+      const perms = collectPerms();
+      if(editingUser && String(editingUser.username) === username){
+        const before = Object.keys(editingUser.perms || {});
+        const removed = before.filter(function(k){ return !perms[k]; });
+        if(before.length && !Object.keys(perms).length){
+          if(!confirm("سيتم حذف كل صلاحيات المستخدم " + username + " بالكامل وسيُعطَّل وصوله للشاشات. متابعة؟")) return;
+        }else if(removed.length){
+          if(!confirm("سيتم إزالة الصلاحيات التالية من المستخدم " + username + ": " + removed.join("، ") + ". متابعة؟")) return;
+        }
+      }
       const payload = {
         username: username,
         fullName: document.getElementById("fn").value,
         role: document.getElementById("role").value,
         active: document.getElementById("active").value === "true",
-        perms: collectPerms()
+        perms: perms
       };
       const pw = document.getElementById("p").value;
       if(pw) payload.passwordHash = await sha256(pw);
@@ -249,6 +261,7 @@
       if(j.ok){ alert("تم الحفظ"); clearU(); listU(); } else alert(j.error || "خطأ");
     }
     async function delU(username){
+      if(username === "admin"){ alert("لا يمكن حذف حساب admin المدمج — استخدم تعطيل فقط."); return; }
       if(!confirm("حذف المستخدم " + username + "؟")) return;
       const j = await api("deleteUser", { username: username });
       if(j.ok) listU(); else alert(j.error || "خطأ");
@@ -264,6 +277,7 @@
       alert(j.ok ? "تم تغيير كلمة المرور" : (j.error || "خطأ"));
     }
     function editU(u){
+      editingUser = u;
       document.getElementById("u").value = u.username;
       document.getElementById("fn").value = u.fullName || "";
       document.getElementById("role").value = u.role || "viewer";
@@ -278,14 +292,18 @@
       const b = document.getElementById("usersBody");
       if(j.ok && j.users && j.users.length){
         b.innerHTML = j.users.map(function(u){
-          const perms = Object.keys(u.perms || {}).map(function(k){ return k + ":" + u.perms[k]; }).join("، ") || "-";
+          const keys = Object.keys(u.perms || {});
+          const perms = keys.map(function(k){ return k + ":" + u.perms[k]; }).join("، ");
+          const permsCell = keys.length
+            ? "<td class='td-r hint'>" + esc(perms) + "</td>"
+            : "<td><span class='badge b-out' style='background:#fef2f2;border-color:#fecaca;color:#b91c1c'>&#9888; بدون صلاحيات</span></td>";
           const on = u.active !== false;
           return "<tr>"+
             "<td>"+esc(u.username)+"</td>"+
             "<td>"+esc(u.fullName)+"</td>"+
             "<td>"+esc(u.role)+"</td>"+
             "<td><span class='badge "+(on?"b-in":"b-out")+"'>"+(on?"مفعل":"معطل")+"</span></td>"+
-            "<td class='td-r hint'>"+esc(perms)+"</td>"+
+            permsCell+
             "<td><div class='cell-act'>"+
               "<button class='btn' onclick='editU("+JSON.stringify(u)+")'>تعديل</button>"+
               "<button class='btn' onclick='resetPassU("+JSON.stringify(u.username)+")'>كلمة مرور</button>"+
