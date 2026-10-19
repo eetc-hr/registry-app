@@ -13,58 +13,72 @@
         <div class="logo-wrap"><img src="EETC_Logo.png" class="logo" onerror="this.style.display='none'"></div>
         <div class="title-group">
           <div class="app-title">متابعة رئيس قطاعات الموارد البشرية والتدريب</div>
-          <div class="app-subtitle">تسجيل الصادر وربطه بالموضوع</div>
+          <div class="app-subtitle">تسجيل الصادر وربطه بملف</div>
         </div>
       </div>
       <button class="btn btn-ghost" onclick="logout()">خروج</button>
     </div>
     <nav>
       <a href="index.html">الرئيسية</a>
-      <a href="incoming.html">تسجيل الوارد</a>
-      <a href="outgoing.html" class="active">تسجيل الصادر</a>
-      <a href="reports.html">التقارير</a>
+      <a href="incoming.html" data-screen="incoming" data-mode="r">تسجيل الوارد</a>
+      <a href="outgoing.html" class="active" data-screen="outgoing" data-mode="r">تسجيل الصادر</a>
+      <a href="reports.html" data-screen="reports" data-mode="r">التقارير</a>
       <a href="settings.html">الإعدادات</a>
-      <a href="users.html">المستخدمين والصلاحيات</a>
     </nav>
   </header>
   <main>
     <div class="container">
 
+      <!-- ========== بيانات الخطاب ========== -->
       <section class="card" data-screen="outgoing" data-mode="w">
         <div class="card-header"><h2 class="card-title">تسجيل الصادر</h2></div>
-        <div class="grid grid-2">
+        <div class="grid grid-4">
           <div class="field"><label>رقم الخطاب *</label><input id="letterNo"></div>
-          <div class="field"><label>جهة المرسل إليها *</label><input id="recipient"></div>
+          <div class="field"><label>الجهة *</label>
+            <input id="recipient" list="companiesList" placeholder="اكتب أو اختر الجهة">
+          </div>
           <div class="field"><label>تاريخ الخطاب *</label><input type="date" id="letterDate"></div>
-          <div class="field"><label>موضوع الخطاب *</label><input id="subject"></div>
-          <div class="field"><label>نوع الخطاب</label><input id="type"></div>
-          <div class="field"><label>درجة الأهمية</label><select id="priority"><option>عادي</option><option>مهم</option><option>عاجل</option></select></div>
+          <div class="field"><label>النوع</label><select id="type"></select></div>
+          <div class="field"><label>درجة الأهمية</label>
+            <select id="priority"><option>عادي</option><option>مهم</option><option>عاجل</option></select>
+          </div>
           <div class="field"><label>سرية</label><select id="secret"><option>لا</option><option>نعم</option></select></div>
-          <div class="field"><label>عدد الصفحات</label><input type="number" id="pages" value="1" min="1"></div>
           <div class="field"><label>مرفق (صورة أو PDF)</label><input type="file" id="att" accept="image/*,.pdf"></div>
+          <div class="field full"><label>ملاحظات</label><textarea id="notes" rows="2"></textarea></div>
+          <div class="field full"><label>الموضوع *</label>
+            <textarea id="subject" rows="3" class="wide" placeholder="اكتب موضوع الخطاب في سطر مستقل"></textarea>
+          </div>
         </div>
-        <div class="field"><label>ملاحظات</label><textarea id="notes" rows="2"></textarea></div>
-        <div class="field"><label>الموضوع المرتبط</label><input id="topicDisplay" readonly placeholder="لم يتم الربط بموضوع"><input type="hidden" id="topicId" value=""></div>
+        <datalist id="companiesList"></datalist>
+
+        <div class="field"><label>الوارد المرتبط (اختياري)</label><input id="linkedInc" placeholder="رقم القيد في الوارد"></div>
+        <input type="hidden" id="topicId" value="">
+        <div class="field"><label>الموضوع المرتبط</label><input id="topicDisplay" readonly placeholder="لم يتم الربط بموضوع"></div>
+
         <div style="display:flex;gap:.5rem;flex-wrap:wrap">
           <button class="btn btn-success" onclick="saveOut()">حفظ الصادر</button>
-          <button class="btn btn-ghost" style="color:#0f452b;border-color:#d7e6df" onclick="resetForm()">مسح الحقول</button>
+          <button class="btn" onclick="resetForm()">مسح الحقول</button>
         </div>
       </section>
 
+      <!-- ========== الربط بملف ========== -->
       <section class="card" data-screen="outgoing" data-mode="w">
-        <div class="card-header"><h2 class="card-title">البحث عن موضوع بالكلمات المشتركة</h2></div>
-        <p class="muted">ابحث عن موضوع مرتبط. إن لم يوجد، يمكنك إنشاء موضوع جديد وربط الصادر به.</p>
-        <div class="grid grid-2">
-          <div class="field"><label>كلمات البحث</label><input id="kw" placeholder="كلمات مشتركة للبحث عن الموضوع"></div>
-          <div style="align-self:end"><button class="btn btn-primary" onclick="searchT()">بحث عن موضوع</button></div>
+        <div class="card-header"><h2 class="card-title">الربط بملف</h2></div>
+        <p class="hint">اكتب كلمات مفتاحية ثم اضغط «بحث» — تُطابَق كل الكلمات مع عناوين ونصوص الموضوعات وخطاباتها، ولو كانت متباعدة عن بعضها. إن لم يوجد موضوع مناسب يمكنك إنشاء موضوع جديد وربطه.</p>
+        <div class="filters">
+          <div class="field"><label>كلمات البحث</label><input id="kw" placeholder="مثال: ترقية موظفين 2026"></div>
+          <div class="acts"><button class="btn btn-primary" onclick="searchT()">بحث</button></div>
         </div>
+
         <div id="resWrap" class="table-wrap" style="display:none">
           <table>
-            <thead><tr><th>رقم الموضوع</th><th>العنوان</th><th>وارد</th><th>صادر</th><th>نقاط التطابق</th><th>ربط</th></tr></thead>
+            <thead><tr><th>رقم الموضوع</th><th>العنوان</th><th>وارد</th><th>صادر</th><th>ربط</th></tr></thead>
             <tbody id="resBody"></tbody>
           </table>
         </div>
-        <div id="noneMsg" style="display:none" class="muted">لا توجد موضوعات مرتبطة بالكلمات المدخلة.</div>
+
+        <div id="noneMsg" style="display:none" class="empty">لا يوجد موضوع مرتبط بالكلمات المدخلة.</div>
+
         <div id="createBox" style="display:none;flex-direction:column;gap:.6rem">
           <div class="field"><label>عنوان الموضوع الجديد *</label><input id="tTitle"></div>
           <div class="field"><label>كلمات مفتاحية (اختياري)</label><input id="tKw"></div>
@@ -78,31 +92,52 @@
   <script src="auth.js"></script>
   <script src="api.js"></script>
   <script>
-    requireAuth(); applyPermissions();
+    const u = requireAuth();
+    applyPermissions();
+
+    let COMPANIES = [];
+
+    (async function init(){
+      try{
+        const s = await api("getSettings");
+        if(s.ok){
+          COMPANIES = lines(s.settings.companies);
+          fillCombo(document.getElementById("type"), lines(s.settings.outgoingTypes), false);
+          document.getElementById("companiesList").innerHTML =
+            COMPANIES.map(c => '<option value="'+esc(c)+'">').join("");
+        }
+      }catch(e){ console.error(e); }
+      if(!document.getElementById("type").options.length){
+        fillCombo(document.getElementById("type"), ["خطاب","مذكرة"], false);
+      }
+    })();
 
     function resetForm(){
-      ["letterNo","recipient","letterDate","subject","type","notes","topicId","topicDisplay","kw"].forEach(function(id){var e=document.getElementById(id);if(e)e.value=""});
-      document.getElementById("pages").value=1;
+      ["letterNo","recipient","letterDate","subject","notes","topicId","topicDisplay","kw","linkedInc"].forEach(function(id){
+        var e=document.getElementById(id); if(e) e.value="";
+      });
+      document.getElementById("att").value="";
     }
 
+    /* ---------- link ---------- */
     async function searchT(){
       var kw=document.getElementById("kw").value.trim();
       if(!kw){alert("أدخل كلمات البحث");return;}
-      var j=await api("searchTopic",{keywords:kw});
       var wrap=document.getElementById("resWrap"), body=document.getElementById("resBody");
       var none=document.getElementById("noneMsg"), box=document.getElementById("createBox");
-      body.innerHTML="";
+      body.innerHTML='<tr><td colspan="5" class="empty">جارٍ البحث...</td></tr>';
+      wrap.style.display="block"; none.style.display="none"; box.style.display="none";
+
+      var j=await api("searchTopic",{keywords:kw});
       if(j.ok && j.results && j.results.length){
-        j.results.forEach(function(r){
-          var tr=document.createElement("tr");
-          tr.innerHTML="<td>"+esc(r.topicNo)+"</td><td>"+esc(r.title)+"</td><td>"+r.incomingCount+"</td><td>"+r.outgoingCount+"</td><td>"+r.score+"</td>"+
-            "<td><button class='btn btn-primary' onclick='linkTopic("+r.id+","+JSON.stringify(r.topicNo)+","+JSON.stringify(r.title)+")'>ربط</button></td>";
-          body.appendChild(tr);
-        });
+        body.innerHTML = j.results.map(function(r){
+          return "<tr><td>"+esc(r.topicNo)+"</td><td class='td-r'>"+esc(r.title)+"</td><td>"+r.incomingCount+"</td><td>"+r.outgoingCount+"</td>"+
+            "<td><button class='btn btn-primary' onclick='linkTopic("+r.id+","+JSON.stringify(r.topicNo)+","+JSON.stringify(r.title)+")'>ربط</button></td></tr>";
+        }).join("");
         wrap.style.display="block"; none.style.display="none"; box.style.display="none";
       }else{
         wrap.style.display="none"; none.style.display="block"; box.style.display="flex";
-        document.getElementById("tTitle").value=document.getElementById("subject").value || "";
+        document.getElementById("tTitle").value=document.getElementById("subject").value.trim() || "";
         document.getElementById("tKw").value=kw;
       }
     }
@@ -110,34 +145,48 @@
     function linkTopic(id,no,title){
       document.getElementById("topicId").value=id;
       document.getElementById("topicDisplay").value=no+" - "+title;
-      alert("تم اختيار الموضوع: "+title);
     }
 
     async function createTAndLink(){
       var title=document.getElementById("tTitle").value.trim();
       if(!title){alert("أدخل عنوان الموضوع");return;}
       var j=await api("createTopic",{title:title,keywords:document.getElementById("tKw").value});
-      if(j.ok){ linkTopic(j.topic.id,j.topic.topicNo,j.topic.title); }
+      if(j.ok) linkTopic(j.topic.id,j.topic.topicNo,j.topic.title);
       else alert(j.error||"خطأ");
     }
 
+    /* ---------- save ---------- */
     async function saveOut(){
       var letterNo=document.getElementById("letterNo").value.trim();
       var recipient=document.getElementById("recipient").value.trim();
       var subject=document.getElementById("subject").value.trim();
-      if(!letterNo||!recipient||!subject){alert("يرجى تعبئة الحقول المطلوبة: رقم الخطاب، الجهة، الموضوع");return;}
+      if(!letterNo||!recipient||!subject){
+        alert("يرجى تعبئة الحقول المطلوبة: رقم الخطاب، الجهة، الموضوع");return;
+      }
       var payload={
         letterNo:letterNo, recipient:recipient, letterDate:document.getElementById("letterDate").value,
         subject:subject, type:document.getElementById("type").value,
         priority:document.getElementById("priority").value, secret:document.getElementById("secret").value,
-        pages:document.getElementById("pages").value, notes:document.getElementById("notes").value,
-        topicId:document.getElementById("topicId").value || null
+        notes:document.getElementById("notes").value,
+        topicId:document.getElementById("topicId").value || null,
+        linkedIncomingId: document.getElementById("linkedInc").value.trim() || ""
       };
       var f=document.getElementById("att").files[0];
       if(f){ payload.attachmentBase64=await fileToBase64(f); payload.attachmentName=f.name; }
       var j=await api("saveOutgoing",payload);
-      if(j.ok){ alert("تم حفظ الصادر رقم "+j.outNo); resetForm(); }
+      if(j.ok){ alert("تم حفظ الصادر رقم "+j.outNo); resetForm(); loadCompanies(); }
       else alert(j.error||"خطأ");
+    }
+
+    async function loadCompanies(){
+      try{
+        const s=await api("getSettings");
+        if(s.ok){
+          COMPANIES=lines(s.settings.companies);
+          document.getElementById("companiesList").innerHTML =
+            COMPANIES.map(c => '<option value="'+esc(c)+'">').join("");
+        }
+      }catch(e){}
     }
   </script>
 </body>

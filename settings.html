@@ -17,37 +17,124 @@
     </div>
     <nav>
       <a href="index.html">الرئيسية</a>
-      <a href="incoming.html">تسجيل الوارد</a>
-      <a href="outgoing.html">تسجيل الصادر</a>
-      <a href="reports.html">التقارير</a>
+      <a href="incoming.html" data-screen="incoming" data-mode="r">تسجيل الوارد</a>
+      <a href="outgoing.html" data-screen="outgoing" data-mode="r">تسجيل الصادر</a>
+      <a href="reports.html" data-screen="reports" data-mode="r">التقارير</a>
       <a href="settings.html" class="active">الإعدادات</a>
-      <a href="users.html">المستخدمين والصلاحيات</a>
     </nav>
   </header>
   <main>
     <div class="container">
-      <section class="card" data-screen="settings" data-mode="w">
-        <div class="card-header"><h2 class="card-title">إعدادات عامة</h2></div>
-        <div class="grid grid-2">
-          <div class="field"><label>بادئة رقم الوارد</label><input id="incomingPrefix"></div>
-          <div class="field"><label>بادئة رقم الصادر</label><input id="outgoingPrefix"></div>
-        </div>
-        <button class="btn btn-success" style="align-self:flex-start" onclick="saveSet()">حفظ الإعدادات</button>
-      </section>
 
-      <section class="card">
-        <div class="card-header"><h2 class="card-title">تغيير كلمة المرور</h2></div>
-        <div class="grid grid-2">
-          <div class="field"><label>كلمة المرور الحالية</label><input type="password" id="oldPass"></div>
-          <div class="field"><label>كلمة المرور الجديدة</label><input type="password" id="newPass"></div>
-        </div>
-        <button class="btn btn-primary" style="align-self:flex-start" onclick="changePass()">تغيير كلمة المرور</button>
-      </section>
+      <div class="tabs">
+        <button class="tab active" data-tab="general">عام</button>
+        <button class="tab" data-tab="companies" data-screen="settings" data-mode="r">الجهات</button>
+        <button class="tab" data-tab="users" data-screen="users" data-mode="r">المستخدمون</button>
+      </div>
 
-      <section class="card">
-        <div class="card-header"><h2 class="card-title">معلومات</h2></div>
-        <div class="muted">التخزين: Google Sheets — المرفقات: Google Drive — الواجهة: GitHub</div>
-      </section>
+      <!-- ==================== عام ==================== -->
+      <div class="tabpane show" id="tab-general">
+        <section class="card" data-screen="settings" data-mode="w">
+          <div class="card-header"><h2 class="card-title">الأرقام وأنواع الخطابات</h2></div>
+          <div class="grid grid-2">
+            <div class="field"><label>بادئة رقم الوارد</label><input id="incomingPrefix"></div>
+            <div class="field"><label>بادئة رقم الصادر</label><input id="outgoingPrefix"></div>
+            <div class="field full"><label>أنواع الخطابات (سطر لكل نوع)</label>
+              <textarea id="types" rows="3" placeholder="خطاب&#10;مذكرة"></textarea>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" data-screen="settings" data-mode="w">
+          <div class="card-header"><h2 class="card-title">حالات المتابعة</h2></div>
+          <p class="hint">تظهر هذه الحالات كومبو بوكس في شاشة المتابعة بالرئيسية، وكذلك كفلتر في نتائج البحث.</p>
+          <div class="grid grid-2">
+            <div class="field"><label>الحالات (سطر لكل حالة)</label>
+              <textarea id="statusOptions" rows="5" placeholder="في العرض&#10;توجيه&#10;حفظ&#10;إغلاق"></textarea>
+            </div>
+            <div class="field"><label>الحالة الافتراضية عند تسجيل الوارد</label>
+              <select id="defaultStatus"></select>
+            </div>
+          </div>
+          <button class="btn btn-success" style="align-self:flex-start" onclick="saveSet()">حفظ الإعدادات</button>
+        </section>
+
+        <section class="card">
+          <div class="card-header"><h2 class="card-title">تغيير كلمة المرور (حسابي)</h2></div>
+          <div class="grid grid-2">
+            <div class="field"><label>كلمة المرور الحالية</label><input type="password" id="oldPass"></div>
+            <div class="field"><label>كلمة المرور الجديدة</label><input type="password" id="newPass"></div>
+          </div>
+          <button class="btn btn-primary" style="align-self:flex-start" onclick="changePass()">تغيير كلمة المرور</button>
+        </section>
+
+        <section class="card">
+          <div class="card-header"><h2 class="card-title">معلومات</h2></div>
+          <div class="muted">التخزين: Google Sheets — المرفقات: Google Drive — الواجهة: GitHub</div>
+        </section>
+      </div>
+
+      <!-- ==================== الجهات ==================== -->
+      <div class="tabpane" id="tab-companies">
+        <section class="card" data-screen="settings" data-mode="r">
+          <div class="card-header"><h2 class="card-title">قائمة الجهات المشتركة</h2></div>
+          <p class="hint">قائمة واحدة مشتركة بين الوارد والصادر. أي جهة جديدة يكتبها المستخدم في شاشة الوارد أو الصادر تُضاف تلقائيًا إلى هذه القائمة.</p>
+
+          <div class="filters">
+            <div class="field"><label>جهة جديدة</label><input id="newCompany" placeholder="اكتب اسم الجهة"></div>
+            <div class="acts">
+              <button class="btn btn-success" onclick="addCompany()">إضافة جهة</button>
+              <button class="btn" onclick="saveCompanies()">حفظ القائمة</button>
+            </div>
+          </div>
+
+          <div class="field"><label>القائمة (سطر لكل جهة)</label>
+            <textarea id="companies" rows="10"></textarea>
+          </div>
+          <div id="companiesPreview" class="muted"></div>
+        </section>
+      </div>
+
+      <!-- ==================== المستخدمون ==================== -->
+      <div class="tabpane" id="tab-users">
+        <section class="card" data-screen="users" data-mode="w">
+          <div class="card-header"><h2 class="card-title">إضافة / تعديل مستخدم</h2></div>
+          <div class="grid grid-2">
+            <div class="field"><label>اسم المستخدم *</label><input id="u"></div>
+            <div class="field"><label>كلمة المرور (اتركها فارغة عند التعديل)</label><input type="password" id="p"></div>
+            <div class="field"><label>الاسم الكامل</label><input id="fn"></div>
+            <div class="field"><label>الدور</label>
+              <select id="role"><option value="admin">admin</option><option value="editor">editor</option><option value="viewer">viewer</option></select>
+            </div>
+            <div class="field"><label>الحساب</label>
+              <select id="active"><option value="true">مفعل</option><option value="false">معطل</option></select>
+            </div>
+          </div>
+          <div class="sub-title">الصلاحيات لكل شاشة</div>
+          <div class="grid grid-2">
+            <div class="field"><label>الوارد</label><select data-perm="incoming"><option value="">لا</option><option value="r">قراءة</option><option value="rw">قراءة/تعديل</option></select></div>
+            <div class="field"><label>الصادر</label><select data-perm="outgoing"><option value="">لا</option><option value="r">قراءة</option><option value="rw">قراءة/تعديل</option></select></div>
+            <div class="field"><label>التقارير</label><select data-perm="reports"><option value="">لا</option><option value="r">قراءة</option><option value="rw">قراءة/تعديل</option></select></div>
+            <div class="field"><label>الإعدادات</label><select data-perm="settings"><option value="">لا</option><option value="r">قراءة</option><option value="rw">قراءة/تعديل</option></select></div>
+            <div class="field"><label>المستخدمون</label><select data-perm="users"><option value="">لا</option><option value="r">قراءة</option><option value="rw">قراءة/تعديل</option></select></div>
+          </div>
+          <div style="display:flex;gap:.5rem">
+            <button class="btn btn-success" onclick="saveU()">حفظ المستخدم</button>
+            <button class="btn" onclick="clearU()">تفريغ</button>
+          </div>
+        </section>
+
+        <section class="card" data-screen="users" data-mode="r">
+          <div class="card-header"><h2 class="card-title">قائمة المستخدمين</h2></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>المستخدم</th><th>الاسم</th><th>الدور</th><th>الحالة</th><th>الصلاحيات</th><th>إجراءات</th></tr></thead>
+              <tbody id="usersBody"><tr><td colspan="6" class="muted">لا توجد بيانات</td></tr></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
     </div>
   </main>
   <script src="config.js"></script>
@@ -55,26 +142,163 @@
   <script src="api.js"></script>
   <script>
     requireAuth(); applyPermissions();
+
+    /* ---------- tabs ---------- */
+    document.querySelectorAll(".tab").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        const name = btn.getAttribute("data-tab");
+        if(btn.style.display === "none") return;
+        document.querySelectorAll(".tab").forEach(function(b){ b.classList.toggle("active", b===btn); });
+        document.querySelectorAll(".tabpane").forEach(function(p){ p.classList.toggle("show", p.id === "tab-"+name); });
+        if(name === "companies") previewCompanies();
+        if(name === "users" && can("users","r")) listU();
+      });
+    });
+
+    /* ---------- general ---------- */
+    let STATUS = [];
     async function loadSet(){
-      var j=await api("getSettings",{});
-      if(j.ok && j.settings){
-        document.getElementById("incomingPrefix").value=j.settings.incomingPrefix||"";
-        document.getElementById("outgoingPrefix").value=j.settings.outgoingPrefix||"";
-      }
+      const j = await api("getSettings");
+      if(!j.ok || !j.settings) return;
+      const s = j.settings;
+      document.getElementById("incomingPrefix").value = s.incomingPrefix || "";
+      document.getElementById("outgoingPrefix").value = s.outgoingPrefix || "";
+      document.getElementById("types").value = (s.incomingTypes || "خطاب\nمذكرة");
+      document.getElementById("statusOptions").value = s.statusOptions || "";
+      document.getElementById("companies").value = s.companies || "";
+      STATUS = lines(s.statusOptions);
+      fillCombo(document.getElementById("defaultStatus"), STATUS.length ? STATUS : ["في العرض"], false);
+      const cur = s.defaultStatus;
+      if(cur) document.getElementById("defaultStatus").value = cur;
+      previewCompanies();
     }
+
     async function saveSet(){
-      var j=await api("saveSettings",{settings:{incomingPrefix:document.getElementById("incomingPrefix").value,outgoingPrefix:document.getElementById("outgoingPrefix").value}});
-      alert(j.ok?"تم حفظ الإعدادات":(j.error||"خطأ"));
+      const st = document.getElementById("statusOptions").value;
+      const types = document.getElementById("types").value;
+      const j = await api("saveSettings", { settings: {
+        incomingPrefix: document.getElementById("incomingPrefix").value,
+        outgoingPrefix: document.getElementById("outgoingPrefix").value,
+        statusOptions: st,
+        defaultStatus: document.getElementById("defaultStatus").value,
+        companies: document.getElementById("companies").value,
+        incomingTypes: types,
+        outgoingTypes: types
+      }});
+      if(j.ok){ STATUS = lines(st); alert("تم حفظ الإعدادات"); }
+      else alert(j.error || "خطأ");
     }
+
     async function changePass(){
-      var oldP=document.getElementById("oldPass").value, newP=document.getElementById("newPass").value;
-      if(!newP){alert("أدخل كلمة المرور الجديدة");return;}
-      var oldHash=await sha256(oldP), newHash=await sha256(newP);
-      var j=await api("changePassword",{oldHash:oldHash,newHash:newHash});
-      alert(j.ok?"تم تغيير كلمة المرور":(j.error||"خطأ"));
-      if(j.ok){document.getElementById("oldPass").value="";document.getElementById("newPass").value="";}
+      const oldP = document.getElementById("oldPass").value, newP = document.getElementById("newPass").value;
+      if(!newP){ alert("أدخل كلمة المرور الجديدة"); return; }
+      const oldHash = await sha256(oldP), newHash = await sha256(newP);
+      const j = await api("changePassword", { oldHash: oldHash, newHash: newHash });
+      alert(j.ok ? "تم تغيير كلمة المرور" : (j.error || "خطأ"));
+      if(j.ok){ document.getElementById("oldPass").value = ""; document.getElementById("newPass").value = ""; }
     }
-    if(can("settings","r")) loadSet();
+
+    /* ---------- companies ---------- */
+    function previewCompanies(){
+      const list = lines(document.getElementById("companies").value);
+      document.getElementById("companiesPreview").textContent = "عدد الجهات: " + list.length;
+    }
+    function addCompany(){
+      const el = document.getElementById("newCompany");
+      const v = el.value.trim();
+      if(!v){ alert("اكتب اسم الجهة"); return; }
+      const ta = document.getElementById("companies");
+      const list = lines(ta.value);
+      if(list.indexOf(v) !== -1){ alert("الجهة موجودة بالفعل"); return; }
+      list.push(v);
+      ta.value = list.join("\n");
+      el.value = "";
+      previewCompanies();
+      saveCompanies();
+    }
+    async function saveCompanies(){
+      const j = await api("saveSettings", { settings: { companies: document.getElementById("companies").value }});
+      alert(j.ok ? "تم حفظ قائمة الجهات" : (j.error || "خطأ"));
+      if(j.ok) previewCompanies();
+    }
+
+    /* ---------- users ---------- */
+    function collectPerms(){
+      const perms = {};
+      document.querySelectorAll("[data-perm]").forEach(function(s){ if(s.value) perms[s.getAttribute("data-perm")] = s.value; });
+      return perms;
+    }
+    function clearU(){
+      ["u","p","fn"].forEach(function(id){ document.getElementById(id).value = ""; });
+      document.getElementById("active").value = "true";
+      document.querySelectorAll("[data-perm]").forEach(function(s){ s.value = ""; });
+    }
+    async function saveU(){
+      const username = document.getElementById("u").value.trim();
+      if(!username){ alert("أدخل اسم المستخدم"); return; }
+      const payload = {
+        username: username,
+        fullName: document.getElementById("fn").value,
+        role: document.getElementById("role").value,
+        active: document.getElementById("active").value === "true",
+        perms: collectPerms()
+      };
+      const pw = document.getElementById("p").value;
+      if(pw) payload.passwordHash = await sha256(pw);
+      const j = await api("saveUser", payload);
+      if(j.ok){ alert("تم الحفظ"); clearU(); listU(); } else alert(j.error || "خطأ");
+    }
+    async function delU(username){
+      if(!confirm("حذف المستخدم " + username + "؟")) return;
+      const j = await api("deleteUser", { username: username });
+      if(j.ok) listU(); else alert(j.error || "خطأ");
+    }
+    async function toggleU(username, active){
+      const j = await api("saveUser", { username: username, active: active });
+      if(j.ok) listU(); else alert(j.error || "خطأ");
+    }
+    async function resetPassU(username){
+      const p = prompt("كلمة المرور الجديدة للمستخدم " + username + ":");
+      if(!p) return;
+      const j = await api("saveUser", { username: username, passwordHash: await sha256(p) });
+      alert(j.ok ? "تم تغيير كلمة المرور" : (j.error || "خطأ"));
+    }
+    function editU(u){
+      document.getElementById("u").value = u.username;
+      document.getElementById("fn").value = u.fullName || "";
+      document.getElementById("role").value = u.role || "viewer";
+      document.getElementById("active").value = String(u.active !== false);
+      document.querySelectorAll("[data-perm]").forEach(function(s){
+        s.value = (u.perms && u.perms[s.getAttribute("data-perm")]) || "";
+      });
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    async function listU(){
+      const j = await api("listUsers");
+      const b = document.getElementById("usersBody");
+      if(j.ok && j.users && j.users.length){
+        b.innerHTML = j.users.map(function(u){
+          const perms = Object.keys(u.perms || {}).map(function(k){ return k + ":" + u.perms[k]; }).join("، ") || "-";
+          const on = u.active !== false;
+          return "<tr>"+
+            "<td>"+esc(u.username)+"</td>"+
+            "<td>"+esc(u.fullName)+"</td>"+
+            "<td>"+esc(u.role)+"</td>"+
+            "<td><span class='badge "+(on?"b-in":"b-out")+"'>"+(on?"مفعل":"معطل")+"</span></td>"+
+            "<td class='td-r hint'>"+esc(perms)+"</td>"+
+            "<td><div class='cell-act'>"+
+              "<button class='btn' onclick='editU("+JSON.stringify(u)+")'>تعديل</button>"+
+              "<button class='btn' onclick='resetPassU("+JSON.stringify(u.username)+")'>كلمة مرور</button>"+
+              "<button class='btn' onclick='toggleU("+JSON.stringify(u.username)+","+(on?"false":"true")+")'>"+(on?"تعطيل":"تفعيل")+"</button>"+
+              "<button class='btn' onclick='delU("+JSON.stringify(u.username)+")'>حذف</button>"+
+            "</div></td>"+
+          "</tr>";
+        }).join("");
+      } else b.innerHTML = "<tr><td colspan='6' class='muted'>لا توجد بيانات</td></tr>";
+    }
+
+    loadSet();
+    if(can("users","r")) listU();
   </script>
 </body>
 </html>

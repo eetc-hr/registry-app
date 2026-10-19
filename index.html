@@ -12,44 +12,304 @@
       <div class="brand">
         <div class="logo-wrap"><img src="EETC_Logo.png" class="logo" onerror="this.style.display='none'"></div>
         <div class="title-group">
-          <div class="app-title">متابعة رئيس قطاعات الموارد البشرية والتدريب</div>
-          <div class="app-subtitle">نظام الوارد والصادر والموضوعات</div>
+          <div class="app-title">نظام الوارد والصادر ومتابعة الموضوعات</div>
+          <div class="app-subtitle">آخر التحديثات والمتابعة</div>
         </div>
       </div>
       <button class="btn btn-ghost" onclick="logout()">خروج</button>
     </div>
     <nav>
       <a href="index.html" class="active">الرئيسية</a>
-      <a href="incoming.html">تسجيل الوارد</a>
-      <a href="outgoing.html">تسجيل الصادر</a>
-      <a href="reports.html">التقارير</a>
+      <a href="incoming.html" data-screen="incoming" data-mode="r">تسجيل الوارد</a>
+      <a href="outgoing.html" data-screen="outgoing" data-mode="r">تسجيل الصادر</a>
+      <a href="reports.html" data-screen="reports" data-mode="r">التقارير</a>
       <a href="settings.html">الإعدادات</a>
-      <a href="users.html">المستخدمين والصلاحيات</a>
     </nav>
   </header>
   <main>
     <div class="container">
+
+      <!-- ========== 1) الداش بورد ========== -->
       <section class="card">
-        <div class="card-header"><h2 class="card-title">مرحبا بك</h2></div>
-        <p id="welcome" class="muted">...</p>
-        <div class="grid grid-2">
-          <div class="stat"><div class="stat-value" id="totInc">0</div><div class="muted">إجمالي الوارد</div></div>
-          <div class="stat"><div class="stat-value" id="totOut">0</div><div class="muted">إجمالي الصادر</div></div>
-          <div class="stat"><div class="stat-value" id="totTop">0</div><div class="muted">إجمالي الموضوعات</div></div>
+        <div class="card-header">
+          <h2 class="card-title">الملخص</h2>
+          <button class="btn" onclick="loadAll()">تحديث</button>
+        </div>
+        <div class="grid grid-4">
+          <div class="stat"><div class="stat-value" id="totInc">-</div><div class="muted">إجمالي الوارد</div></div>
+          <div class="stat"><div class="stat-value" id="totOut">-</div><div class="muted">إجمالي الصادر</div></div>
+          <div class="stat"><div class="stat-value" id="totTop">-</div><div class="muted">إجمالي الموضوعات</div></div>
+          <div class="stat"><div class="stat-value" id="totInReview">-</div><div class="muted">قيد المتابعة</div></div>
+        </div>
+        <div id="statErr" class="hint" style="color:#b91c1c"></div>
+      </section>
+
+      <!-- ========== 2) آخر السجلات الواردة ========== -->
+      <section class="card" data-screen="incoming" data-mode="r">
+        <div class="card-header">
+          <h2 class="card-title">آخر السجلات الواردة</h2>
+          <span class="hint">مرتبة من الأحدث إلى الأقدم</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>رقم القيد</th><th>رقم الخطاب</th><th>الجهة</th><th>الموضوع</th><th>التاريخ</th><th>حالة المتابعة</th></tr></thead>
+            <tbody id="recentBody"><tr><td colspan="6" class="empty">جارٍ التحميل...</td></tr></tbody>
+          </table>
+        </div>
+        <a class="btn" href="incoming.html" style="align-self:flex-start">فتح شاشة الوارد</a>
+      </section>
+
+      <!-- ========== 3) قسم المتابعة ========== -->
+      <section class="card" data-screen="incoming" data-mode="w">
+        <div class="card-header">
+          <h2 class="card-title">قسم المتابعة</h2>
+          <span class="hint">الخطابات الواردة من الأحدث إلى الأقدم — غيّر الحالة أو جهة التوجيه من الجدول</span>
+        </div>
+        <div class="filters" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">
+          <div class="field"><label>تصفية بالحالة</label><select id="fuFilter"></select></div>
+          <div class="field"><label>بحث سريع</label><input id="fuQ" placeholder="رقم / جهة / موضوع" oninput="renderFollowup()"></div>
+          <div class="acts"><button class="btn" onclick="clearFuFilter()">تفريغ التصفية</button></div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>رقم القيد</th><th>الجهة</th><th>الموضوع</th><th>التاريخ</th><th>حالة المتابعة</th><th>جهة التوجيه</th></tr></thead>
+            <tbody id="fuBody"><tr><td colspan="6" class="empty">جارٍ التحميل...</td></tr></tbody>
+          </table>
         </div>
       </section>
+
+      <!-- ========== 4) البحث الشامل ========== -->
+      <section class="card">
+        <div class="card-header"><h2 class="card-title">البحث الشامل</h2></div>
+        <p class="hint">رقم القيد أو رقم الخطاب يبحث في الصادر والوارد معًا. اترك الخانات الفارغة لتجاوز الفلتر.</p>
+        <div class="filters">
+          <div class="field"><label>الرقم (قيد / خطاب)</label><input id="fq" placeholder="مثال: 001"></div>
+          <div class="field"><label>الموضوع</label><input id="fs" placeholder="أي نص أو كلمة"></div>
+          <div class="field"><label>من تاريخ</label><input type="date" id="ffrom"></div>
+          <div class="field"><label>إلى تاريخ</label><input type="date" id="fto"></div>
+          <div class="field"><label>حالة المتابعة</label><select id="fstatus"></select></div>
+          <div class="acts">
+            <button class="btn btn-primary" onclick="doSearch()">بحث</button>
+            <button class="btn" onclick="clearFilters()">تفريغ</button>
+          </div>
+        </div>
+        <div class="table-wrap" style="display:none" id="sWrap">
+          <table>
+            <thead><tr><th>الرقم</th><th>النوع</th><th>الموضوع</th><th>التاريخ</th><th>حالة المتابعة</th></tr></thead>
+            <tbody id="sBody"></tbody>
+          </table>
+        </div>
+        <div id="sMsg" class="empty" style="display:none">لا توجد نتائج مطابقة</div>
+      </section>
+
     </div>
   </main>
+
   <script src="config.js"></script>
   <script src="auth.js"></script>
   <script src="api.js"></script>
   <script>
-    var u=requireAuth(); applyPermissions();
-    if(u) document.getElementById("welcome").textContent="مرحبا "+u.fullName+" ("+u.role+")";
-    (async function(){
-      var j=await api("listReports",{});
-      if(j && j.ok){ document.getElementById("totInc").textContent=j.totals.incoming; document.getElementById("totOut").textContent=j.totals.outgoing; document.getElementById("totTop").textContent=j.totals.topics; }
+    const u = requireAuth();
+    applyPermissions();
+
+    let STATUS_OPTIONS = [];
+    let FU_ROWS = [];
+
+    async function loadAll(){
+      await loadStats();
+      await loadRecent();
+      await loadFollowup();
+    }
+
+    (async function init(){
+      try{
+        const s = await api("getSettings");
+        if(s.ok) STATUS_OPTIONS = lines(s.settings.statusOptions);
+      }catch(e){ console.error(e); }
+      if(!STATUS_OPTIONS.length) STATUS_OPTIONS = ["في العرض","توجيه","حفظ","إغلاق"];
+
+      fillSelect(document.getElementById("fstatus"), STATUS_OPTIONS, "الكل");
+      fillSelect(document.getElementById("fuFilter"), STATUS_OPTIONS, "الكل");
+
+      await loadAll();
     })();
+
+    /* ---------- dashboard ---------- */
+    async function loadStats(){
+      const set = function(id, v){ const el=document.getElementById(id); if(el) el.textContent = v; };
+      const errs = [];
+
+      let totals = null;
+      try{
+        const j = await api("listReports");
+        if(j.ok) totals = j.totals;
+        else errs.push(j.error || "تعذر تحميل التقارير");
+      }catch(e){ errs.push(e.message); }
+
+      if(totals){
+        set("totInc", totals.incoming);
+        set("totOut", totals.outgoing);
+        set("totTop", totals.topics);
+      }else{
+        try{ const a = await api("listIncoming");  if(a.ok) set("totInc", a.data.length); else errs.push(a.error||""); }catch(e){ errs.push(e.message); }
+        try{ const a = await api("listOutgoing");  if(a.ok) set("totOut", a.data.length); else errs.push(a.error||""); }catch(e){ errs.push(e.message); }
+      }
+
+      try{
+        const fu = await api("listFollowup");
+        if(fu.ok){
+          const def = STATUS_OPTIONS[0] || "في العرض";
+          set("totInReview", fu.rows.filter(function(r){ return (r.status||def) === def; }).length);
+        }else errs.push(fu.error||"");
+      }catch(e){ errs.push(e.message); }
+
+      document.getElementById("statErr").textContent = errs.length ? ("تنبيه: " + errs.join(" — ")) : "";
+    }
+
+    /* ---------- last incoming ---------- */
+    async function loadRecent(){
+      const body = document.getElementById("recentBody");
+      try{
+        const j = await api("listFollowup");
+        if(!j.ok){ body.innerHTML = '<tr><td colspan="6" class="empty">'+esc(j.error||"خطأ")+'</td></tr>'; return; }
+        const rows = (j.rows || []).slice(0, 10);
+        if(!rows.length){ body.innerHTML = '<tr><td colspan="6" class="empty">لا توجد سجلات واردة بعد</td></tr>'; return; }
+        body.innerHTML = rows.map(function(r){
+          return '<tr>'+
+            '<td><b>'+esc(r.no)+'</b></td>'+
+            '<td>'+esc(r.letterNo||'-')+'</td>'+
+            '<td class="td-r">'+esc(r.sender||'-')+'</td>'+
+            '<td class="td-r">'+esc(r.subject||'-')+'</td>'+
+            '<td>'+esc(r.date||'-')+'</td>'+
+            '<td>'+(esc(r.status)||'-')+'</td>'+
+            '</tr>';
+        }).join("");
+      }catch(e){
+        body.innerHTML = '<tr><td colspan="6" class="empty">'+esc(e.message)+'</td></tr>';
+      }
+    }
+
+    /* ---------- search ---------- */
+    async function doSearch(){
+      const wrap=document.getElementById("sWrap"), msg=document.getElementById("sMsg"), body=document.getElementById("sBody");
+      const payload = {
+        q: document.getElementById("fq").value.trim(),
+        subject: document.getElementById("fs").value.trim(),
+        dateFrom: document.getElementById("ffrom").value,
+        dateTo: document.getElementById("fto").value,
+        status: document.getElementById("fstatus").value
+      };
+      body.innerHTML = '<tr><td colspan="5" class="empty">جارٍ البحث...</td></tr>';
+      wrap.style.display="block"; msg.style.display="none";
+      try{
+        const j = await api("globalSearch", payload);
+        if(!j.ok){ body.innerHTML='<tr><td colspan="5" class="empty">'+esc(j.error||"خطأ")+'</td></tr>'; return; }
+        if(!j.rows.length){ wrap.style.display="none"; msg.style.display="block"; return; }
+        body.innerHTML = j.rows.map(function(r){
+          const badge = r.kind === "وارد" ? "b-in" : "b-out";
+          const st = r.kind === "وارد" ? (esc(r.status)||"-") : "-";
+          return '<tr>'+
+            '<td><b>'+esc(r.no)+'</b>'+(r.letterNo?'<div class="hint">خطاب '+esc(r.letterNo)+'</div>':'')+'</td>'+
+            '<td><span class="badge '+badge+'">'+esc(r.kind)+'</span></td>'+
+            '<td class="td-r">'+esc(r.subject||'-')+'</td>'+
+            '<td>'+esc(r.date||'-')+'</td>'+
+            '<td>'+st+'</td>'+
+            '</tr>';
+        }).join("");
+      }catch(e){
+        body.innerHTML='<tr><td colspan="5" class="empty">'+esc(e.message)+'</td></tr>';
+      }
+    }
+
+    function clearFilters(){
+      ["fq","fs","ffrom","fto"].forEach(function(id){ document.getElementById(id).value=""; });
+      document.getElementById("fstatus").value="";
+      document.getElementById("sWrap").style.display="none";
+      document.getElementById("sMsg").style.display="none";
+    }
+
+    /* ---------- follow-up ---------- */
+    async function loadFollowup(){
+      try{
+        const j = await api("listFollowup");
+        if(!j.ok){ document.getElementById("fuBody").innerHTML='<tr><td colspan="6" class="empty">'+esc(j.error||"خطأ")+'</td></tr>'; return; }
+        FU_ROWS = j.rows;
+        renderFollowup();
+      }catch(e){
+        document.getElementById("fuBody").innerHTML='<tr><td colspan="6" class="empty">'+esc(e.message)+'</td></tr>';
+      }
+    }
+
+    function filteredFu(){
+      const q = normText(document.getElementById("fuQ").value);
+      const st = document.getElementById("fuFilter").value;
+      return FU_ROWS.filter(function(r){
+        if(st && (r.status||"") !== st) return false;
+        if(q){
+          const hay = normText([r.no,r.letterNo,r.sender,r.subject,r.to].join(" "));
+          const words = q.split(/\s+/).filter(Boolean);
+          if(!words.every(function(w){ return hay.indexOf(w) !== -1; })) return false;
+        }
+        return true;
+      });
+    }
+
+    function renderFollowup(){
+      const body=document.getElementById("fuBody");
+      const rows=filteredFu();
+      if(!rows.length){ body.innerHTML='<tr><td colspan="6" class="empty">لا توجد سجلات</td></tr>'; return; }
+      body.innerHTML = rows.map(function(r){
+        const opts = STATUS_OPTIONS.map(function(s){
+          return '<option value="'+esc(s)+'"'+((r.status||"")===s?' selected':'')+'>'+esc(s)+'</option>';
+        }).join("");
+        return '<tr>'+
+          '<td><b>'+esc(r.no)+'</b><div class="hint">خطاب '+esc(r.letterNo||'-')+'</div></td>'+
+          '<td class="td-r">'+esc(r.sender||'-')+'</td>'+
+          '<td class="td-r">'+esc(r.subject||'-')+'</td>'+
+          '<td>'+esc(r.date||'-')+'</td>'+
+          '<td><div class="cell-act"><select onchange="changeStatus('+r.id+',this.value)">'+opts+'</select></div></td>'+
+          '<td><div class="cell-act"><input value="'+esc(r.to||"")+'" placeholder="جهة التوجيه" onchange="changeTo('+r.id+',this.value)" onblur="changeTo('+r.id+',this.value)"></div></td>'+
+          '</tr>';
+      }).join("");
+    }
+
+    async function changeStatus(id, value){
+      const r = FU_ROWS.find(function(x){ return String(x.id)===String(id); });
+      const prev = r ? r.status : "";
+      if(r) r.status = value;
+      renderFollowup();
+      try{
+        const j = await api("updateFollowup", { id:id, status:value, to: r?r.to:"" });
+        if(!j.ok){ if(r) r.status=prev; renderFollowup(); alert(j.error||"تعذر الحفظ"); }
+        else loadStats();
+      }catch(e){ if(r) r.status=prev; renderFollowup(); alert(e.message); }
+    }
+
+    async function changeTo(id, value){
+      const r = FU_ROWS.find(function(x){ return String(x.id)===String(id); });
+      if(!r) return;
+      if((r.to||"") === (value||"")) return;
+      const prev = r.to;
+      r.to = value;
+      try{
+        const j = await api("updateFollowup", { id:id, status:r.status, to:value });
+        if(!j.ok){ r.to=prev; renderFollowup(); alert(j.error||"تعذر الحفظ"); }
+      }catch(e){ r.to=prev; alert(e.message); }
+    }
+
+    function clearFuFilter(){
+      document.getElementById("fuQ").value="";
+      document.getElementById("fuFilter").value="";
+      renderFollowup();
+    }
+
+    function normText(s){
+      return String(s||"")
+        .replace(/[\u064B-\u0652\u0640]/g,"")
+        .replace(/[أإآ]/g,"ا").replace(/ى/g,"ي").replace(/ة/g,"ه")
+        .replace(/[^\p{L}\p{N}]+/gu," ")
+        .toLowerCase().trim();
+    }
   </script>
 </body>
 </html>
