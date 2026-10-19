@@ -99,7 +99,7 @@
 
     (async function init(){
       try{
-        const s = await api("getSettings");
+        const s = await api("publicSettings");
         if(s.ok){
           COMPANIES = lines(s.settings.companies);
           fillCombo(document.getElementById("type"), lines(s.settings.outgoingTypes), false);
@@ -180,7 +180,7 @@
 
     async function loadCompanies(){
       try{
-        const s=await api("getSettings");
+        const s=await api("publicSettings");
         if(s.ok){
           COMPANIES=lines(s.settings.companies);
           document.getElementById("companiesList").innerHTML =
