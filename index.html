@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>متابعة رئيس قطاعات الموارد البشرية والتدريب</title>
+  <title>الرئيسية</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,7 +13,7 @@
         <div class="logo-wrap"><img src="assets/EETC_Logo.png" class="logo" onerror="this.style.display='none'"></div>
         <div class="title-group">
           <div class="app-title">متابعة رئيس قطاعات الموارد البشرية والتدريب</div>
-          <div class="app-subtitle">نظام الوارد والصادر - Google Sheets</div>
+          <div class="app-subtitle">نظام الوارد والصادر والموضوعات</div>
         </div>
       </div>
       <button class="btn btn-ghost" onclick="logout()">خروج</button>
@@ -30,14 +30,26 @@
   <main>
     <div class="container">
       <section class="card">
-        <div class="card-header"><h2 class="card-title">الرئيسية</h2></div>
-        <p class="muted">مرحبا بك. النظام مرتبط بـ Google Sheets + Google Apps Script.</p>
+        <div class="card-header"><h2 class="card-title">مرحبا بك</h2></div>
+        <p id="welcome" class="muted">...</p>
+        <div class="grid grid-2">
+          <div class="stat"><div class="stat-value" id="totInc">0</div><div class="muted">إجمالي الوارد</div></div>
+          <div class="stat"><div class="stat-value" id="totOut">0</div><div class="muted">إجمالي الصادر</div></div>
+          <div class="stat"><div class="stat-value" id="totTop">0</div><div class="muted">إجمالي الموضوعات</div></div>
+        </div>
       </section>
     </div>
   </main>
   <script src="js/config.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/api.js"></script>
-  <script>requireAuth()</script>
+  <script>
+    var u=requireAuth(); applyPermissions();
+    if(u) document.getElementById("welcome").textContent="مرحبا "+u.fullName+" ("+u.role+")";
+    (async function(){
+      var j=await api("listReports",{});
+      if(j && j.ok){ document.getElementById("totInc").textContent=j.totals.incoming; document.getElementById("totOut").textContent=j.totals.outgoing; document.getElementById("totTop").textContent=j.totals.topics; }
+    })();
+  </script>
 </body>
 </html>

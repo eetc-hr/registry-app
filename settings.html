@@ -11,9 +11,7 @@
     <div class="topbar">
       <div class="brand">
         <div class="logo-wrap"><img src="assets/EETC_Logo.png" class="logo" onerror="this.style.display='none'"></div>
-        <div class="title-group">
-          <div class="app-title">متابعة رئيس قطاعات الموارد البشرية والتدريب</div>
-        </div>
+        <div class="title-group"><div class="app-title">متابعة رئيس قطاعات الموارد البشرية والتدريب</div><div class="app-subtitle">الإعدادات</div></div>
       </div>
       <button class="btn btn-ghost" onclick="logout()">خروج</button>
     </div>
@@ -28,15 +26,55 @@
   </header>
   <main>
     <div class="container">
+      <section class="card" data-screen="settings" data-mode="w">
+        <div class="card-header"><h2 class="card-title">إعدادات عامة</h2></div>
+        <div class="grid grid-2">
+          <div class="field"><label>بادئة رقم الوارد</label><input id="incomingPrefix"></div>
+          <div class="field"><label>بادئة رقم الصادر</label><input id="outgoingPrefix"></div>
+        </div>
+        <button class="btn btn-success" style="align-self:flex-start" onclick="saveSet()">حفظ الإعدادات</button>
+      </section>
+
       <section class="card">
-        <div class="card-header"><h2 class="card-title">الإعدادات</h2></div>
-        <p class="muted">يمكن تغيير بيانات تسجيل الدخول من هنا (اسم مستخدم وكلمة مرور) وإدارة القوائم.</p>
+        <div class="card-header"><h2 class="card-title">تغيير كلمة المرور</h2></div>
+        <div class="grid grid-2">
+          <div class="field"><label>كلمة المرور الحالية</label><input type="password" id="oldPass"></div>
+          <div class="field"><label>كلمة المرور الجديدة</label><input type="password" id="newPass"></div>
+        </div>
+        <button class="btn btn-primary" style="align-self:flex-start" onclick="changePass()">تغيير كلمة المرور</button>
+      </section>
+
+      <section class="card">
+        <div class="card-header"><h2 class="card-title">معلومات</h2></div>
+        <div class="muted">التخزين: Google Sheets — المرفقات: Google Drive — الواجهة: GitHub</div>
       </section>
     </div>
   </main>
   <script src="js/config.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/api.js"></script>
-  <script>requireAuth()</script>
+  <script>
+    requireAuth(); applyPermissions();
+    async function loadSet(){
+      var j=await api("getSettings",{});
+      if(j.ok && j.settings){
+        document.getElementById("incomingPrefix").value=j.settings.incomingPrefix||"";
+        document.getElementById("outgoingPrefix").value=j.settings.outgoingPrefix||"";
+      }
+    }
+    async function saveSet(){
+      var j=await api("saveSettings",{settings:{incomingPrefix:document.getElementById("incomingPrefix").value,outgoingPrefix:document.getElementById("outgoingPrefix").value}});
+      alert(j.ok?"تم حفظ الإعدادات":(j.error||"خطأ"));
+    }
+    async function changePass(){
+      var oldP=document.getElementById("oldPass").value, newP=document.getElementById("newPass").value;
+      if(!newP){alert("أدخل كلمة المرور الجديدة");return;}
+      var oldHash=await sha256(oldP), newHash=await sha256(newP);
+      var j=await api("changePassword",{oldHash:oldHash,newHash:newHash});
+      alert(j.ok?"تم تغيير كلمة المرور":(j.error||"خطأ"));
+      if(j.ok){document.getElementById("oldPass").value="";document.getElementById("newPass").value="";}
+    }
+    if(can("settings","r")) loadSet();
+  </script>
 </body>
 </html>
