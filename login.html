@@ -34,10 +34,18 @@
   <script src="config.js"></script>
   <script src="auth.js"></script>
   <script>
+    const errBox=document.getElementById('err');
+    function showErr(m){errBox.textContent=m;errBox.style.display='block'}
     document.getElementById('loginBtn').onclick=async()=>{
       const u=document.getElementById('user').value.trim();
       const p=document.getElementById('pass').value;
-      try{const ok=await login(u,p);if(ok)location.href='index.html';else document.getElementById('err').style.display='block'}catch(e){document.getElementById('err').style.display='block'}
+      if(!u||!p){showErr('أدخل اسم المستخدم وكلمة المرور');return}
+      errBox.style.display='none';
+      try{
+        const ok=await login(u,p);
+        if(ok){location.href='index.html';return}
+        showErr(window.__loginErr||'بيانات الدخول غير صحيحة');
+      }catch(e){showErr('استثناء: '+(e&&e.message?e.message:e))}
     }
     document.addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('loginBtn').click()})
   </script>

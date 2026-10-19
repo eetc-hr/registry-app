@@ -77,20 +77,33 @@ function sha256js(ascii) {
 
 async function login(user, pass) {
   try {
+    window.__loginErr = "";
+    if (!GAS_URL || GAS_URL.indexOf("PUT_YOUR") === 0) {
+      window.__loginErr = "config.js لا يحتوي على رابط API الصحيح";
+      return false;
+    }
     var hp = await sha256(pass);
     var r = await fetch(GAS_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "login", username: user, passwordHash: hp })
     });
-    var j = await r.json();
+    var txt = await r.text();
+    var j;
+    try { j = JSON.parse(txt); }
+    catch (e) {
+      window.__loginErr = "الرد ليس JSON (" + r.status + "): " + txt.substring(0, 80);
+      return false;
+    }
     if (j && j.ok) {
       localStorage.setItem("token", j.token);
       localStorage.setItem("user", JSON.stringify(j.user));
       return true;
     }
+    window.__loginErr = j && j.error ? j.error : ("خطأ غير معروف (status " + r.status + ")");
     return false;
   } catch (e) {
+    window.__loginErr = "استثناء: " + (e && e.message ? e.message : e);
     console.error("login error:", e);
     return false;
   }
